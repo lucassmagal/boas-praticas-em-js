@@ -1,3 +1,10 @@
+Boas práticas em JS para evitar más surpresas
+=============================================
+
+Palestra apresentada por **Lucas S. Magalhães** no [II ENCATEC](www.encatec.com.br).
+
+<hr />
+
 ## Basic usage
 
 **DZSlides** is a **one-file** HTML template to build slides in HTML5 and CSS3.
