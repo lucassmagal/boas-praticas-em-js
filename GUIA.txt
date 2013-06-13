@@ -1,0 +1,60 @@
+GUIA.txt
+
+Let's see the code
+===================
+
+Passo 1: explicar o que são closures.
+
+    function soma(a, b, callback) {
+        callback(a + b)
+    }
+
+    function printa(n) {
+        console.log(n)
+    }
+
+    soma(2, 3, printa);
+
+    // OU
+
+    soma(2, 3, function(resultado) {
+        console.log(resultado)
+    })
+
+    // OU, neste caso
+    soma(2, 3, console.log);
+
+Passo 2: explicar por que módulos são úteis
+    - arquivos separados, nada de colocar no html.
+    - convencao de nome, o arquivo deve ser identico ao modulo (tipo o java)
+    - modo estrito!
+
+Passo 3: plugins JS. A convenção pra eles é diferente.
+    - um arquivo por plugin, normalmente
+    - a closure é diferente
+    - a convencao de nome é jquery.myplugin.js
+
+
+Coding Style
+============
+
+Comentar que uso como base o guia de estilo do Google.
+
+ClassesAssim.
+
+variaveis_assim.
+
+$queries_jquery assim
+
+myvar.uma_propriedade_assim
+
+funcoes_assim
+
+4 espaços, sem tabs, sem choro.
+
+Strings, eu prefiro ' ao invés de "
+
+Sempre use {  }, mesmo quando não necessário.
+
+Por favor, evite ao máximo possível criar funções dentro de condicionais
+    (ifs, etc.). Wild functions: uma hora está lá, outra hora não está.

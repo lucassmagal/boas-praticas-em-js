@@ -1,80 +1,488 @@
 <!DOCTYPE html>
 
 <meta charset="utf-8">
-<title>The Title Of Your Presentation</title>
+<title>Boas práticas em JS para evitar más surpresas</title>
 
 <!-- Your Slides -->
 <!-- One section is one slide -->
 
 <section>
     <!-- This is the first slide -->
-    <h1>My Presentation</h1>
-    <footer>by John Doe</footer>
+    <h1>Boas práticas em JS para evitar más surpresas</h1>
+    <footer>Lucas Sampaio</footer>
 </section>
 
 <section>
-    <p>Some random text: But I've never been to the moon! You can see how I lived before I met you. Also Zoidberg.
-    I could if you hadn't turned on the light and shut off my stereo.</p>
-</section>
+    <h3>Quem sou eu?</h3>
 
-<section>
-    <h3>An incremental list</h3>
     <ul class="incremental">
-      <li>Item 1
-      <li>Item 2
-      <li>Item 3
+      <li>Aluno da UFES de 2009 a 2011</li>
+      <li>Engenharia de Computação, CEUNES, São Mateus</li>
+      <li>(sim, seria veterano de alguns de vocês)</li>
+      <li>
+        Hoje sou desenvolvedor Python/Django na 
+        <a href="http://www.orama.com.br">Órama Investimentos</a>
+        (e ando escrevendo um monte de JS)
+      </li>
     </ul>
-    <div role="note">Some notes. They are only visible using onstage shell.</div>
+</section>
+
+<section>
+  <h2>
+    Ao ponto: o que é JavaScript?
+  </h2>
+</section>
+
+<section>
+    <h3>Direto da Wikipedia</h3>
+
+    <ul class="incremental"> 
+      <li>Linguagem de script (interpretada)</li>
+      <li>Surgiu em 1995, com outro nome (Mocha -> LiveScript -> JavaScript)</li>
+      <li>
+        É OO, possui tipagem fraca e funções de primeira classe
+        (calma, explico depois)
+      </li>
+      <li>A sintaxe é C-like</li>
+      <li>É a linguagem padrão dos browsers, simplesmente TODOS possuem</li>
+      <li>** O nome "JavaScript" foi uma jogada de marketing da época</li>
+    </ul>
+</section>
+
+<section>
+  <h3>Como se parece? C-like...</h3>
+
+  <pre class="brush: js">
+    function sum(array) {
+      var sum = 0;
+
+      for(var i=0; i < array.length; i++) {
+        sum += array[i];
+      }
+
+      return sum;
+    }
+
+    console.log(sum([1, 2, 3, 4, 5]));
+
+    if(sum([1, 2, 3]) === 6) {
+      console.log('Ok!');
+    } else {
+      console.log('Isso nunca sera executado =S');
+    }
+
+    var always_true = true;
+    while(always_true) {
+      console.log('Isso sera executado PRA SEMPRE!');
+      // eu chrome não me deixava recarregar a página depois disso
+    }
+  </pre>
+</section>
+
+<section>
+  <h3>Simples, não?</h3>
+
+  <p>
+    Mas JS apenas <em>lembra</em> C, seu funcionamento é um tanto diferente
+     e isso pode <em>pregar algumas peças</em>
+  </p>
+</section>
+
+<section>
+  <h2>Por exemplo...</h2>
+</section>
+
+<section>
+  <h3>O que o trecho abaixo faz?</h3>
+
+  <pre class="brush: js">
+    function foo() {
+      for(var i=0; i < 3; i++) {
+          console.log('Dentro de for-i. J =', j);
+
+          for(var j=0; j<3; j++) {
+              console.log('Dentro de for-j. (I,J) =', i, j);
+          }
+      }
+    }
+  </pre>
+
+  <pre class="brush: js">
+    /*
+    Dentro de for-i. J = ???????????
+    Dentro de for-j. (I,J) = 0 0
+    Dentro de for-j. (I,J) = 0 1
+    Dentro de for-j. (I,J) = 0 2
+    Dentro de for-i. J = ???????????
+    Dentro de for-j. (I,J) = 1 0
+    Dentro de for-j. (I,J) = 1 1
+    Dentro de for-j. (I,J) = 1 2
+    Dentro de for-i. J = ???????????
+    Dentro de for-j. (I,J) = 2 0
+    Dentro de for-j. (I,J) = 2 1
+    Dentro de for-j. (I,J) = 2 2
+    */
+  </pre>
+</section>
+
+<section>
+  <h3>O que o trecho abaixo faz?</h3>
+
+  <pre class="brush: js">
+    function foo() {
+      for(var i=0; i < 3; i++) {
+          console.log('Dentro de for-i. J =', j);
+
+          for(var j=0; j < 3; j++) {
+              console.log('Dentro de for-j. (I,J) =', i, j);
+          }
+      }
+    }
+  </pre>
+
+  <pre class="brush: js; highlight: [2, 6, 10]">
+    /*
+    Dentro de for-i. J = undefined
+    Dentro de for-j. (I,J) = 0 0
+    Dentro de for-j. (I,J) = 0 1
+    Dentro de for-j. (I,J) = 0 2
+    Dentro de for-i. J = 3
+    Dentro de for-j. (I,J) = 1 0
+    Dentro de for-j. (I,J) = 1 1
+    Dentro de for-j. (I,J) = 1 2
+    Dentro de for-i. J = 3
+    Dentro de for-j. (I,J) = 2 0
+    Dentro de for-j. (I,J) = 2 1
+    Dentro de for-j. (I,J) = 2 2
+    */
+  </pre>
+</section>
+
+<section>
+  <h3>Em JS, só existe escopo de função. As duas versões são equivalentes:</h3>
+
+  <pre class="brush: js; highlight: [2, 5]">
+    function foo() {
+      for(var i=0; i < 3; i++) {
+          console.log('Dentro de for-i. J =', j);
+
+          for(var j=0; j < 3; j++) {
+              console.log('Dentro de for-j. (I,J) =', i, j);
+          }
+      }
+    }
+  </pre>
+
+  <pre class="brush: js; highlight: [2]">
+    function foo() {
+      var i, j;
+
+      for(i=0; i < 3; i++) {
+          console.log('Dentro de for-i. J =', j);
+
+          for(j=0; j < 3; j++) {
+              console.log('Dentro de for-j. (I,J) =', i, j);
+          }
+      }
+    }
+  </pre>
 </section>
 
 <section>
   <blockquote>
-    Who's brave enough to fly into something we all keep calling a death sphere?
+    Fulano de tal me disse que em JS não preciso de ponto e vírgula!
   </blockquote>
-  <details>
-    <p>In the onstage shell, notes scroll rather than overflow:</p>
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla ac dui eu est feugiat lacinia sit amet nec leo. Mauris eu ipsum leo. Nulla mi odio, cursus sed sollicitudin non, fringilla id magna. Suspendisse sit amet posuere elit. Maecenas iaculis, turpis a placerat imperdiet, libero lorem feugiat nisi, nec tincidunt diam nibh sit amet massa. Vestibulum quis adipiscing tellus. Maecenas sollicitudin sodales pulvinar. Donec dui ipsum, bibendum facilisis consequat interdum, tempus ut mauris. Aliquam ut dolor nec odio scelerisque bibendum quis in neque. Aliquam dui dui, pulvinar quis fermentum quis, gravida eu augue. Nunc tristique dolor a urna pulvinar bibendum. Curabitur mollis cursus neque, in scelerisque metus porta non. Donec tempor enim in nibh vestibulum et convallis nisi malesuada. Duis ut lectus sed metus venenatis porttitor id pharetra quam. Suspendisse sapien turpis, ornare in molestie et, gravida eget turpis.
-    </p>
-  </details>
 </section>
 
 <section>
-    <h2>Part two</h2>
+  <h3>Verdade, mas... como os códigos abaixo funcionam?</h3>
+
+  <pre class="brush: js">
+    a = b + c
+    foo()
+
+    a = b + c
+    [1].push(a)
+
+    a = b + c
+    (options || {}).foo ? bar() : baz()
+  </pre>
 </section>
 
 <section>
-    <figure> <!-- Figures are used to display images and videos fullpage -->
-      <img src="http://placekitten.com/g/800/600">
-      <figcaption>An image</figcaption>
-    </figure>
-    <div role="note">Kittens are so cute!</div>
+  <h3>Verdade, mas... como os códigos abaixo funcionam?</h3>
+
+  <pre class="brush: js">
+    // ok, era o esperado
+    a = b + c;
+    foo()
+
+    // oops
+    a = b + c[1].push(a)
+
+    // WTF?
+    a = b + c(options || {}).foo ? bar() : baz()
+  </pre>
+
+  <p>Sempre use ponto-e-vírgula, pra ter <em>certeza</em> do que acontece.</p>
 </section>
 
 <section>
-    <figure> <!-- Videos are automatically played -->
-      <video src="http://videos-cdn.mozilla.net/brand/Mozilla_Firefox_Manifesto_v0.2_640.webm" poster="http://www.mozilla.org/images/about/poster.jpg"></video>
-      <figcaption>A video</figcaption>
-    </figure>
+  <h3>Sabe o (==) e o (!=)?</h3>
+
+  <pre class="brush: js">
+    console.log(2 == 2);
+    console.log(2 == "   2  ");
+    console.log(2 != "  2 ");
+
+    console.log(2 === 2);         // spoiler: true
+    console.log(2 === "   2  ");  // false
+    console.log(2 !== "  2 ");    // false
+  </pre>
+
+  <p>
+    Com (==) e (!=) o JS converterá os tipos, se diferentes. 
+    Os que estamos acostumados são (===) e (!===).
+  </p>
 </section>
 
 <section>
-    <h2>End!</h2>
+  <h2>JavaScript é OO. E como eu crio classes?</h2>
+</section>
+
+<section>
+  <h3>Primeiro, vamos entender como a OO funciona no JS</h3>
+
+  <p>
+    Sim, JS é OO, mas não possui classes. <strong>Tudo são objetos.</strong>
+    Você cria objetos outros objetos <em>clonando</em> de outros.
+  </p>
+</section>
+
+<section>
+  <h3>Criando um objeto do zero</h3>
+
+  <pre class="brush: js">
+    // criando um objeto do zero
+    var palestrante = {
+      nome: 'Lucas',
+      idade: 22,
+      falar_algo: function(algo) {
+        console.log(algo, this.nome);
+      }
+    };
+  </pre>
+
+  <pre class="brush: js">
+    // funciona assim também
+    var palestrante = {
+      nome: 'Lucas',
+      idade: 22
+    };
+
+    // palestrante.falar_algo
+    palestrante['falar_algo'] = function(algo) {
+      console.log(algo, this.nome);
+    };
+  </pre>
+</section>
+
+<section>
+  <h3>Mas classes são mais bacanas. Como criar?</h3>
+
+  <pre class="brush: js">
+    // O jeito mais bacana é criando **protótipos**
+
+    // o construtor da minha classe
+    function Professor(nome, materia) {
+      this.nome = nome;
+      this.materia = materia;
+    }
+
+    // instanciando
+    var fulano = new Professor('Jose', 'CS');
+
+    // O que imprime?
+    console.log(fulano.nome);
+    console.log(fulano['materia']);
+  </pre>
+</section>
+
+<section>
+  <h3>E os métodos?</h3>
+
+  <pre class="brush: js">
+    function Professor(nome, materia) {
+      this.nome = nome;
+      this.materia = materia;
+    }
+
+    // Isto é um método =D
+    Professor.prototype.dar_aula = function(alunos) {
+      console.log(this.nome, 'esta dando aula de', this.materia, 'para:');
+
+      for(var i=0; i < alunos.length; i++) {
+        console.log(alunos[i]);
+      }
+    }
+
+    var ciclano = new Professor('Maria', 'Quake');
+    ciclano.dar_aula(['Lucas', 'Leozin', 'Daros']);
+  </pre>
+</section>
+
+<section>
+  <h3>Herança?</h3>
+
+  <pre class="brush: js">
+    function Diretor(nome, materia, departamento) {
+      Professor.call(this, nome, materia);
+      this.departamento = departamento;
+    }
+
+    // aqui fica a herança =D
+    Diretor.prototype = new Professor();
+    Diretor.prototype.constructor = Diretor;
+
+    Diretor.prototype.fazer_algo = function(algo) {
+      console.log('Eu,', this.nome, ', estou', algo);
+    };
+
+    var beltrano = new Diretor('Jose', 'Tropa de Elite', 'Filmes');
+    beltrano.dar_aula(['Nascimento', 'Ramiro']);
+    beltrano.fazer_algo('dirigindo um filme');
+  </pre>
+</section>
+
+<section>
+  <h2>Sabemos o básico, agora vamos organizar código JS.</h2>
+</section>
+
+<section>
+  <h3>Passo 1: strict mode!</h3>
+
+  <p>
+    O <em>strict mode</em> muda um pouco o funcionamento de código JS.
+    As vantagens mais comuns são:
+  </p>
+
+  <ul>
+    <li>Disparar erros que normalmente passariam em silêncio</li>
+    <li>Proibir sintaxes deprecadas (ou bad uses, somente)</li>
+  </ul>
+</section>
+
+<section>
+  <h3>Por exemplo</h3>
+
+  <pre class="brush: js">
+    // com modo restrito
+    function foo() {
+        'use strict';
+        nome = 'Encatec';
+        console.log(nome);
+    }
+    // Vai lançar uma exceção se "nome" não existir no escopo
+
+    // sem modo restrito
+    function bar() {
+        nome = 'ENCATEC';
+        console.log(nome);
+    }
+    // Vai executar normalmente, mas com um side effect: "nome" se tornou
+    // uma variável global =S
+  </pre>
+</section>
+
+<section>
+  <h3>Passo 2: módulos!</h3>
+
+  <p>
+    É bastante fácil escrever código macarrônico em JS. Especialmente
+    quando começamos com apenas uns plugins jQuery e terminamos com pelo
+    menos uma centena de linhas =S
+  </p>
+</section>
+
+<section>
+  <blockquote>
+    Let's see the code
+  </blockquote>
+</section>
+
+<section>
+  <h3>Passo 3, finalmente: coding style!</h3>
+
+  <p>
+    Seja consistente em todo o seu código, facilitará a leitura
+    e manutenção do código ;)
+  </p>
+</section>
+
+<section>
+  <blockquote>
+    Let's see the code
+  </blockquote>
+</section>
+
+<section>
+    <h2>Finito.</h2>
+
+    <footer>
+      github.com/lucassmagal/boas-praticas-em-js<br/>
+      me@lsmagalhaes.com
+    </footer>
+</section>
+
+<section>
+  <h3>Referências!</h3>
+
+  <ul>
+    <li><a href="http://pt.wikipedia.org/wiki/JavaScript">Javascript na Wikipedia</a></li>
+    <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions_and_function_scope/Strict_mode">Strict Mode (MDN)</a></li>
+    <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Introduction_to_Object-Oriented_JavaScript#Inheritance">Introduction to Object Oriented Javascript (MDN)</a></li>
+    <li><a href="http://google-styleguide.googlecode.com/svn/trunk/javascriptguide.xml">JS Coding Style do Google</a></li>
+    <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Comparison_Operators?redirectlocale=en-US&redirectslug=JavaScript%2FReference%2FOperators%2FComparison_Operators">Comparação entre (==)x(===) e (!=)x(!==) (MDN)</a></li>
+    <li><a href="http://dailyjs.com/2012/04/19/semicolons/">Javascript and semicolons</a></li>
+  </ul>
 </section>
 
 <!-- Your Style -->
 <!-- Define the style of your presentation -->
+<script src="shCore.js"></script>
+<script src="shBrushJScript.js"></script>
+
+<link rel="stylesheet" type="text/css" href="shCore.css">
+<link rel="stylesheet" type="text/css" href="shThemeDefault.css">
+
+<script>
+  SyntaxHighlighter.all();
+</script>
 
 <!-- Maybe a font from http://www.google.com/webfonts ? -->
-<link href='http://fonts.googleapis.com/css?family=Oswald' rel='stylesheet'>
+<!-- <link href='http://fonts.googleapis.com/css?family=Oswald' rel='stylesheet'> -->
+<link href='http://fonts.googleapis.com/css?family=Pontano+Sans|Lato:400,700|Source+Code+Pro' rel='stylesheet' type='text/css'>
 
 <style>
+  * { margin: 0; padding: 0; -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; font-family: 'Pontano Sans', sans-serif; font-size: 18px;}
+  [role="note"] { display: none; }
+  body {
+    width: 800px; height: 600px;
+    margin-left: -400px; margin-top: -300px;
+    position: absolute; top: 50%; left: 50%;
+    overflow: hidden;
+    display: none;
+  }
+
   html, .view body { background-color: black; counter-reset: slideidx; }
-  body, .view section { background-color: white; border-radius: 12px }
-  /* A section is a slide. It's size is 800x600, and this will never change */
-  section, .view head > title {
+  body, .view section { background-color: white; border-radius: 6px }
+  /* A section is a slide. It's size is 800x600, and this will never change section, .view head > title */
+   h1, h2, h3, footer {
       /* The font from Google */
-      font-family: 'Oswald', arial, serif;
-      font-size: 30px;
+      font-family: 'Lato', cursive;
+      font-size: 16px;
+      text-transform: uppercase;
+      font-weight: bold;
   }
 
   .view section:after {
@@ -90,22 +498,42 @@
     margin: 1em 0 1em 0;
   }
 
+  a {
+    color: #000;
+  }
+
   h1, h2 {
     margin-top: 200px;
     text-align: center;
-    font-size: 80px;
+    font-size: 60px;
+      text-shadow: 1px 1px 0 #4DBCE9,
+                   2px 2px 0 #4DBCE9;
   }
   h3 {
+    font-size: 26px;
     margin: 100px 0 50px 100px;
+    text-shadow: 2px 2px 0 #4DBCE9;
   }
 
   ul {
       margin: 50px 200px;
   }
 
+  li {
+    margin-bottom: 10px;
+  }
+
+  .syntaxhighlighter {
+    font-size: 16px !important;
+  }
+
+  em {
+    font-size: 40px;
+  }
+
   p {
-    margin: 75px;
-    font-size: 50px;
+    margin: 45px;
+    font-size: 45px;
   }
 
   blockquote {
@@ -216,15 +644,7 @@
 
 <!-- Default Style -->
 <style>
-  * { margin: 0; padding: 0; -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; }
-  [role="note"] { display: none; }
-  body {
-    width: 800px; height: 600px;
-    margin-left: -400px; margin-top: -300px;
-    position: absolute; top: 50%; left: 50%;
-    overflow: hidden;
-    display: none;
-  }
+  
   .view body {
     position: static;
     margin: 0; padding: 0;
